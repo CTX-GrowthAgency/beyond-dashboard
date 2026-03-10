@@ -9,7 +9,7 @@ export default async function LoginPage({
 }) {
   const { error } = await searchParams;
   const authed = await isAuthenticated();
-  if (authed) redirect("/bookings");
+  if (authed) redirect("/events");
 
   async function handleLogin(formData: FormData) {
     "use server";
@@ -23,7 +23,7 @@ export default async function LoginPage({
         maxAge: 60 * 60 * 24 * 30, // 30 days
         path: "/",
       });
-      redirect("/bookings");
+      redirect("/events");
     } else {
       redirect("/login?error=1");
     }
