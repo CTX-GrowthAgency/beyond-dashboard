@@ -29,11 +29,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Booking already cancelled" }, { status: 409 });
   }
 
-  await ref.update({
-    ticketStatus:  "cancelled",
-    cancelledAt:   new Date(),
-    cancelledBy:   "dashboard",
-  });
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ 
+    success: true, 
+    message: "Database updates are disabled. Booking data remains unchanged." 
+  });
 }

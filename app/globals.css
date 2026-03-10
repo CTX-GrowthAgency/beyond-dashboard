@@ -22,7 +22,6 @@
   --font:         'DM Sans', sans-serif;
   --font-display: 'Bebas Neue', sans-serif;
   --radius:       0px;
-  --sidebar-w:    220px;
 }
 
 html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 14px; }
@@ -31,22 +30,7 @@ button { font-family: var(--font); cursor: pointer; }
 input, select, textarea { font-family: var(--font); }
 
 /* ── Layout ── */
-.dash-shell { display: flex; min-height: 100vh; }
-
-.dash-sidebar {
-  width: var(--sidebar-w);
-  flex-shrink: 0;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  top: 0; left: 0; bottom: 0;
-  z-index: 100;
-}
-
 .dash-main {
-  margin-left: var(--sidebar-w);
   flex: 1;
   min-height: 100vh;
   display: flex;
@@ -72,51 +56,7 @@ input, select, textarea { font-family: var(--font); }
 }
 
 /* ── Sidebar ── */
-.sb-logo {
-  padding: 20px 18px 16px;
-  border-bottom: 1px solid var(--border);
-}
-.sb-logo-text {
-  font-family: var(--font-display);
-  font-size: 22px;
-  letter-spacing: 0.06em;
-  color: var(--text);
-}
-.sb-logo-sub {
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-3);
-  margin-top: 2px;
-}
-.sb-nav { padding: 10px 10px; flex: 1; }
-.sb-nav-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-2);
-  transition: background 0.15s, color 0.15s;
-  margin-bottom: 2px;
-}
-.sb-nav-link:hover { background: rgba(255,255,255,0.04); color: var(--text); }
-.sb-nav-link.active { background: var(--gold-dim); color: var(--gold); }
-.sb-nav-link svg { opacity: 0.6; flex-shrink: 0; }
-.sb-nav-link.active svg { opacity: 1; }
-.sb-nav-section {
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--text-3);
-  padding: 14px 10px 6px;
-}
-.sb-footer {
-  padding: 14px 10px;
-  border-top: 1px solid var(--border);
-}
+/* Sidebar styles removed - no longer used */
 
 /* ── Page header ── */
 .page-header { margin-bottom: 24px; }
@@ -359,3 +299,94 @@ select.input { min-width: 140px; cursor: pointer; }
 .divider { height: 1px; background: var(--border); margin: 20px 0; }
 .text-muted { color: var(--text-2); }
 .text-mono { font-family: monospace; }
+
+/* ── Mobile Responsive ── */
+@media (max-width: 768px) {
+  .dash-content {
+    padding: 16px 16px 40px;
+  }
+  
+  .page-title { font-size: 24px; }
+  .page-sub { font-size: 12px; }
+  
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+  }
+  .stat-card { padding: 16px 12px; }
+  .stat-value { font-size: 24px; }
+  
+  .table-toolbar {
+    padding: 10px 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .input {
+    font-size: 12px;
+    height: 32px;
+    padding: 6px 10px;
+  }
+  .btn {
+    height: 32px;
+    font-size: 10px;
+    padding: 0 12px;
+  }
+  
+  table th { padding: 8px 6px; font-size: 9px; }
+  table td { padding: 8px 6px; font-size: 12px; }
+  .td-id { font-size: 10px; }
+  .td-name { font-size: 12px; }
+  .td-amount { font-size: 14px; }
+  
+  .detail-grid { grid-template-columns: 1fr; gap: 12px; }
+  .detail-card { padding: 16px; }
+  
+  .login-card { width: 320px; padding: 28px 24px; }
+  .login-title { font-size: 24px; }
+  
+  .toast-wrap {
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+  }
+  .toast {
+    min-width: auto;
+    font-size: 12px;
+    padding: 10px 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dash-content { padding: 12px 12px 32px; }
+  
+  .page-title { font-size: 20px; }
+  .page-sub { font-size: 11px; }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .stat-card { padding: 14px 12px; }
+  .stat-value { font-size: 20px; }
+  
+  .table-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .input {
+    min-width: 100%;
+  }
+  
+  table th { padding: 6px 4px; font-size: 8px; }
+  table td { padding: 6px 4px; font-size: 11px; }
+  .td-id { font-size: 9px; }
+  .td-name { font-size: 11px; }
+  .td-amount { font-size: 12px; }
+  
+  .detail-card { padding: 12px; }
+  
+  .login-card { width: 100%; margin: 16px; padding: 24px 20px; }
+  .login-title { font-size: 20px; }
+  
+  .badge { font-size: 9px; padding: 2px 6px; }
+}

@@ -5,6 +5,7 @@
 // Receives pre-fetched serialized rows from the server page.
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
 interface TicketTypeInfo { price: number; capacity?: number; }
@@ -28,7 +29,7 @@ interface Stats {
   totalTicketsSold: number;
 }
 
-type SortKey = "title" | "date" | "totalRevenue" | "totalTicketsSold" | "totalBookings";
+type SortKey = "title" | "date" | "totalRevenue" | "totalTicketsSold";
 
 /* ─── Helpers ───────────────────────────────────────────────────────────── */
 function formatDate(iso: string | undefined) {
@@ -204,6 +205,49 @@ export default function EventsTableClient({
 
         /* ── Result count ── */
         .ev-count          { font-size: 11px; color: var(--text3); white-space: nowrap; }
+
+        /* ── Mobile Responsive ── */
+        @media (max-width: 768px) {
+          .ev-stats { grid-template-columns: 1fr 1fr; }
+          .ev-stat { padding: 14px 16px; }
+          .ev-stat-value { font-size: 24px; }
+          
+          .ev-toolbar { padding: 8px 12px; gap: 8px; }
+          .ev-search { min-width: 160px; flex: 1; }
+          .ev-input { font-size: 12px; height: 32px; padding: 0 8px; }
+          select.ev-input { min-width: 120px; }
+          .ev-btn { padding: 0 10px; font-size: 10px; }
+          .ev-count { font-size: 10px; }
+          
+          .ev-title { font-size: 24px; }
+          .ev-sub { font-size: 12px; }
+          
+          table.ev-tbl th { padding: 8px 10px; font-size: 9px; }
+          table.ev-tbl td { padding: 8px 10px; font-size: 12px; }
+          .ev-cell-title { font-size: 12px; }
+          .ev-cell-id { font-size: 10px; }
+          .ev-cell-mono, .ev-cell-gold { font-size: 14px; }
+          .ev-ttype { font-size: 10px; }
+          .ev-badge { font-size: 9px; padding: 2px 6px; }
+        }
+
+        @media (max-width: 480px) {
+          .ev-stats { grid-template-columns: 1fr; }
+          .ev-toolbar { flex-direction: column; align-items: stretch; }
+          .ev-search { min-width: 100%; }
+          .ev-ml-auto { margin-left: 0; margin-top: 8px; }
+          
+          .ev-title { font-size: 20px; }
+          .ev-sub { font-size: 11px; }
+          
+          table.ev-tbl th { padding: 6px 8px; font-size: 8px; }
+          table.ev-tbl td { padding: 6px 8px; font-size: 11px; }
+          .ev-cell-title { font-size: 11px; }
+          .ev-cell-id { font-size: 9px; }
+          .ev-cell-mono, .ev-cell-gold { font-size: 12px; }
+          .ev-ttype { font-size: 9px; }
+          .ev-badge { font-size: 8px; padding: 1px 4px; }
+        }
       `}</style>
 
       {/* ── Page header ── */}
@@ -221,14 +265,6 @@ export default function EventsTableClient({
         <div className="ev-stat">
           <div className="ev-stat-label">Active</div>
           <div className="ev-stat-value green">{stats.activeEvents}</div>
-        </div>
-        <div className="ev-stat">
-          <div className="ev-stat-label">Total Revenue</div>
-          <div className="ev-stat-value gold">{inr(stats.totalRevenue)}</div>
-        </div>
-        <div className="ev-stat">
-          <div className="ev-stat-label">Tickets Sold</div>
-          <div className="ev-stat-value">{stats.totalTicketsSold}</div>
         </div>
       </div>
 
@@ -284,9 +320,6 @@ export default function EventsTableClient({
                 <th>Venue</th>
                 <th>Status</th>
                 <th>Ticket Types</th>
-                <th className="sortable" style={{ textAlign: "center" }} onClick={() => handleSort("totalBookings")}>
-                  Bookings <SortIcon k="totalBookings" />
-                </th>
                 <th className="sortable" style={{ textAlign: "center" }} onClick={() => handleSort("totalTicketsSold")}>
                   Tickets Sold <SortIcon k="totalTicketsSold" />
                 </th>
@@ -298,7 +331,7 @@ export default function EventsTableClient({
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8}>
+                  <td colSpan={7}>
                     <div className="ev-empty">
                       <p>No events match your search</p>
                     </div>
@@ -310,8 +343,10 @@ export default function EventsTableClient({
 
                     {/* Event name + ID */}
                     <td>
-                      <div className="ev-cell-title">{row.title}</div>
-                      <div className="ev-cell-id">{row.id.slice(0, 12)}…</div>
+                      <Link href={`/events/${row.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                        <div className="ev-cell-title">{row.title}</div>
+                        <div className="ev-cell-id">{row.id.slice(0, 12)}…</div>
+                      </Link>
                     </td>
 
                     {/* Date */}
@@ -347,11 +382,6 @@ export default function EventsTableClient({
                           </div>
                         ))
                       }
-                    </td>
-
-                    {/* Bookings count */}
-                    <td style={{ textAlign: "center" }}>
-                      <span className="ev-cell-mono">{row.totalBookings}</span>
                     </td>
 
                     {/* Tickets sold */}

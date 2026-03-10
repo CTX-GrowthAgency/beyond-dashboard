@@ -46,7 +46,7 @@ export default async function EventsPage() {
       status:           e.status       ?? "inactive",
       ticketTypes:      e.ticketTypes  ?? {},
       totalBookings:    rev.bookings,
-      totalRevenue:     rev.revenue,
+      totalRevenue:     rev.revenue - (rev.tickets * 50),
       totalTicketsSold: rev.tickets,
     };
   });
@@ -54,7 +54,7 @@ export default async function EventsPage() {
   const stats = {
     totalEvents:      rows.length,
     activeEvents:     rows.filter((r) => r.status === "active").length,
-    totalRevenue:     rows.reduce((s, r) => s + r.totalRevenue,     0),
+    totalRevenue:     rows.reduce((s, r) => s + r.totalRevenue, 0),
     totalTicketsSold: rows.reduce((s, r) => s + r.totalTicketsSold, 0),
   };
 
