@@ -13,24 +13,26 @@ interface Event {
   venueName: string;
   status: string;
   ticketTypes: Record<string, TicketTypeInfo>;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface EventStats {
   totalTicketsSold: number;
   totalRevenue: number;
   scannedCount: number;
-  confirmedBookings: number;
-  totalBookings: number;
 }
 
 export default function EventDetailClient({
   event,
   stats,
   bookings,
+  users,
 }: {
   event: Event;
   stats: EventStats;
   bookings: BookingRow[];
+  users: Record<string, any>;
 }) {
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -241,10 +243,6 @@ export default function EventDetailClient({
           <div className="stat-label">Tickets Scanned</div>
           <div className="stat-value green">{stats.scannedCount}</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-label">Confirmed Bookings</div>
-          <div className="stat-value">{stats.confirmedBookings}</div>
-        </div>
       </div>
 
       {/* Bookings Table */}
@@ -293,7 +291,6 @@ export default function EventDetailClient({
                 <th>Tickets</th>
                 <th>Amount</th>
                 <th>Payment</th>
-                <th>Status</th>
                 <th>Gate Scan</th>
                 <th>Date</th>
               </tr>
@@ -328,7 +325,6 @@ export default function EventDetailClient({
                       ₹{booking.pricing.grandTotal.toLocaleString("en-IN")}
                     </td>
                     <td>{paymentBadge(booking.paymentStatus)}</td>
-                    <td>{ticketBadge(booking.ticketStatus)}</td>
                     <td>{scannedBadge(booking.scannedAt)}</td>
                     <td style={{ fontSize: 12, color: "var(--text3)" }}>
                       {formatDateTime(booking.createdAt)}

@@ -32,8 +32,16 @@ export async function GET(req: NextRequest) {
       order: searchParams.get('order') || undefined,
     });
 
+    // Add pagination
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 200); // Max 200 for performance
+    const offset = (page - 1) * limit;
+
     const db = getDb();
-    let bookingsQuery: any = db.collection("bookings");
+    let bookingsQuery: any = db.collection("bookings")
+      .orderBy("createdAt", "desc")
+      .limit(limit)
+      .offset(offset);
 
     // Apply filters
     if (query.eventId) {
@@ -102,7 +110,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ 
       bookings,
       total: bookings.length,
-      query
+      page,
+      limit,
+      query,
+      hasMore: bookings.length === limit
     });
 
   } catch (error) {

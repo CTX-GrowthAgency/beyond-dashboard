@@ -1,11 +1,11 @@
 // app/events/page.tsx
-// Server component — fetches events + booking revenue from Firestore,
-// then hands serialized data to the client table below.
+// Server component — fetches events with optimized queries and caching
 
 import { getDb } from "@/lib/firebase";
 import { requireAuth } from "@/lib/auth";
 import { EventDoc, BookingDoc } from "@/types";
 import { Timestamp } from "firebase-admin/firestore";
+import { getCachedData } from "@/lib/cache";
 import EventsTableClient from '../../components/EventTableClient';
 
 function tsToIso(ts: Timestamp | undefined | null): string | undefined {
@@ -17,46 +17,72 @@ export default async function EventsPage() {
   await requireAuth();
   const db = getDb();
 
-  // Fetch events + all completed bookings in parallel
-  const [eventsSnap, bookingsSnap] = await Promise.all([
-    db.collection("events").orderBy("createdAt", "desc").get(),
-    db.collection("bookings").where("paymentStatus", "==", "completed").get(),
-  ]);
+  // Fetch events with composite index (status + createdAt)
+  const eventsSnap = await db
+    .collection("events")
+    .where("status", "==", "active") // Use index: status + createdAt
+    .orderBy("createdAt", "desc")
+    .limit(50)
+    .get();
+  
+  // Get per-event stats (not global)
+  const events = eventsSnap.docs.map(async (doc) => {
+    const eventData = doc.data() as Omit<EventDoc, 'id'>;
+    const eventId = doc.id;
+    
+    // Get cached stats for this specific event
+    const eventStats = await getCachedData(`event_stats_${eventId}`, async () => {
+      // This query uses composite index: eventId + paymentStatus + createdAt
+      const eventBookings = await db
+        .collection("bookings")
+        .where("eventId", "==", eventId)
+        .where("paymentStatus", "==", "completed")
+        .orderBy("createdAt", "desc")
+        .limit(500) // Limit for performance
+        .get();
 
-  // Aggregate per-event revenue / tickets sold / booking count
-  const revenueMap: Record<string, { revenue: number; tickets: number; bookings: number }> = {};
-  bookingsSnap.docs.forEach((d) => {
-    const b = d.data() as BookingDoc;
-    if (!b.eventId) return;
-    if (!revenueMap[b.eventId]) revenueMap[b.eventId] = { revenue: 0, tickets: 0, bookings: 0 };
-    revenueMap[b.eventId].revenue  += b.pricing?.grandTotal ?? 0;
-    revenueMap[b.eventId].tickets  += (b.tickets ?? []).reduce((s, t) => s + t.quantity, 0);
-    revenueMap[b.eventId].bookings += 1;
-  });
+      const bookings = eventBookings.docs.map(doc => doc.data());
+      
+      return {
+        totalRevenue: bookings.reduce((sum: number, b: any) => {
+          const commission = 50 * (b.tickets?.reduce((s: number, t: any) => s + t.quantity, 0) || 0);
+          return sum + ((b.pricing?.grandTotal || 0) - commission);
+        }, 0),
+        totalBookings: bookings.length,
+        totalTicketsSold: bookings.reduce((sum: number, b: any) => 
+          (b.tickets?.reduce((s: number, t: any) => s + t.quantity, 0) || 0), 0
+        ),
+        scannedCount: bookings.filter((b: any) => b.scannedAt).length,
+      };
+    }, 300000); // 5 minute cache
 
-  // Serialize to plain objects (no Timestamps, no Firestore internals)
-  const rows = eventsSnap.docs.map((doc) => {
-    const e   = doc.data() as EventDoc;
-    const rev = revenueMap[doc.id] ?? { revenue: 0, tickets: 0, bookings: 0 };
     return {
-      id:               doc.id,
-      title:            e.title        ?? "Untitled",
-      date:             tsToIso(e.date),
-      venueName:        e.venueName    ?? "",
-      status:           e.status       ?? "inactive",
-      ticketTypes:      e.ticketTypes  ?? {},
-      totalBookings:    rev.bookings,
-      totalRevenue:     rev.revenue - (rev.tickets * 50),
-      totalTicketsSold: rev.tickets,
+      id: eventId,
+      title: eventData.title,
+      date: tsToIso(eventData.date),
+      venueName: eventData.venueName,
+      status: eventData.status,
+      ticketTypes: eventData.ticketTypes,
+      createdAt: eventData.createdAt.toDate().toISOString(),
+      updatedAt: eventData.updatedAt.toDate().toISOString(),
+      // Use per-event stats
+      totalBookings: eventStats.totalBookings,
+      totalRevenue: eventStats.totalRevenue,
+      totalTicketsSold: eventStats.totalTicketsSold,
     };
   });
 
+  // Wait for all event stats to be calculated
+  const resolvedEvents = await Promise.all(events);
+
+  // Calculate global stats from resolved events
   const stats = {
-    totalEvents:      rows.length,
-    activeEvents:     rows.filter((r) => r.status === "active").length,
-    totalRevenue:     rows.reduce((s, r) => s + r.totalRevenue, 0),
-    totalTicketsSold: rows.reduce((s, r) => s + r.totalTicketsSold, 0),
+    totalEvents: resolvedEvents.length,
+    activeEvents: resolvedEvents.length, // All fetched events are active
+    totalRevenue: resolvedEvents.reduce((sum: number, event: any) => sum + event.totalRevenue, 0),
+    totalTicketsSold: resolvedEvents.reduce((sum: number, event: any) => sum + event.totalTicketsSold, 0),
+    scannedCount: resolvedEvents.reduce((sum: number, event: any) => sum + event.scannedCount, 0),
   };
 
-  return <EventsTableClient rows={rows} stats={stats} />;
+  return <EventsTableClient rows={resolvedEvents} stats={stats} />;
 }
