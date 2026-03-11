@@ -320,9 +320,6 @@ export default function EventsTableClient({
                 <th>Venue</th>
                 <th>Status</th>
                 <th>Ticket Types</th>
-                <th className="sortable" style={{ textAlign: "center" }} onClick={() => handleSort("totalTicketsSold")}>
-                  Tickets Sold <SortIcon k="totalTicketsSold" />
-                </th>
                 <th className="sortable" style={{ textAlign: "right" }} onClick={() => handleSort("totalRevenue")}>
                   Revenue <SortIcon k="totalRevenue" />
                 </th>
@@ -383,12 +380,6 @@ export default function EventsTableClient({
                         ))
                       }
                     </td>
-
-                    {/* Tickets sold */}
-                    <td style={{ textAlign: "center" }}>
-                      <span className="ev-cell-mono">{row.totalTicketsSold}</span>
-                    </td>
-
                     {/* Revenue */}
                     <td style={{ textAlign: "right" }}>
                       {row.totalRevenue > 0

@@ -20,7 +20,6 @@ export default async function EventsPage() {
   // Fetch events with composite index (status + createdAt)
   const eventsSnap = await db
     .collection("events")
-    .where("status", "==", "active") // Use index: status + createdAt
     .orderBy("createdAt", "desc")
     .limit(50)
     .get();
@@ -59,7 +58,7 @@ export default async function EventsPage() {
     return {
       id: eventId,
       title: eventData.title,
-      date: tsToIso(eventData.date),
+      date: tsToIso(eventData.date || eventData.createdAt), // Use date field or fallback to createdAt
       venueName: eventData.venueName,
       status: eventData.status,
       ticketTypes: eventData.ticketTypes,
