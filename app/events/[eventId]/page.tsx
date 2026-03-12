@@ -110,10 +110,6 @@ export default async function EventPage({ params }: { params: Promise<{ eventId:
     // Serialize bookings for client with error handling
     const bookingRows = bookings.map(booking => {
       try {
-        // Get user data for this booking
-        const userId = booking.userId || booking.uid;
-        const userData = users[userId];
-        
         return {
           bookingId: booking.bookingId,
           userId: booking.userId,
@@ -127,9 +123,6 @@ export default async function EventPage({ params }: { params: Promise<{ eventId:
           paidAt: booking.paidAt?.toDate().toISOString(),
           scannedAt: booking.scannedAt?.toDate().toISOString(),
           scannedBy: booking.scannedBy,
-          // Add user data
-          userName: userData?.name || 'Unknown',
-          userEmail: userData?.email || 'unknown@example.com',
         };
       } catch (error) {
         console.error('Error serializing booking:', error);

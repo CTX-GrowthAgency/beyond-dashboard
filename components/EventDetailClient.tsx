@@ -290,7 +290,6 @@ export default function EventDetailClient({
                 <th>Attendee</th>
                 <th>Tickets</th>
                 <th>Amount</th>
-                <th>Payment</th>
                 <th>Gate Scan</th>
                 <th>Date</th>
               </tr>
@@ -298,20 +297,22 @@ export default function EventDetailClient({
             <tbody>
               {filteredBookings.length === 0 ? (
                 <tr>
-                  <td colSpan={8}>
+                  <td colSpan={6}>
                     <div className="empty-state">
                       <p>No bookings found</p>
                     </div>
                   </td>
                 </tr>
               ) : (
-                filteredBookings.map((booking) => (
+                filteredBookings.map((booking) => {
+                  const user = users[booking.userId] || {};
+                  return (
                   <tr key={booking.bookingId}>
                     <td className="td-id">{booking.bookingId.slice(0, 8)}…</td>
                     <td>
-                      <div className="td-name">{booking.userName || "—"}</div>
+                      <div className="td-name">{user.name || "—"}</div>
                       <div style={{ fontSize: 11, color: "var(--text3)", marginTop: 2 }}>
-                        {booking.userEmail}
+                        {user.email || "—"}
                       </div>
                     </td>
                     <td>
@@ -324,13 +325,13 @@ export default function EventDetailClient({
                     <td className="td-amount">
                       ₹{booking.pricing.grandTotal.toLocaleString("en-IN")}
                     </td>
-                    <td>{paymentBadge(booking.paymentStatus)}</td>
                     <td>{scannedBadge(booking.scannedAt)}</td>
                     <td style={{ fontSize: 12, color: "var(--text3)" }}>
                       {formatDateTime(booking.createdAt)}
                     </td>
                   </tr>
-                ))
+                  );
+                })
               )}
             </tbody>
           </table>

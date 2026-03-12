@@ -49,12 +49,12 @@ const db = getDb();
 const eventId = 'your-event-id';
 
 await db.collection('events').doc(eventId).update({
-  status: 'deactivated', // or 'cancelled', 'completed', 'draft'
+  status: 'inactive', // or 'deactivated'
   updatedAt: admin.firestore.FieldValue.serverTimestamp()
 });
 ```
 
-#### **Method 3: Create New Deactivated Event**
+#### **Method 3: Create New Inactive Event**
 ```javascript
 const db = getDb();
 
@@ -84,6 +84,8 @@ function statusBadge(status: string) {
   switch (status) {
     case 'active':
       return <span className="badge badge-green">Active</span>;
+    case 'inactive':
+      return <span className="badge badge-muted">Inactive</span>;
     case 'deactivated':
       return <span className="badge badge-red">Deactivated</span>;
     case 'cancelled':
@@ -186,10 +188,23 @@ Add these CSS classes to your EventTableClient:
 }
 ```
 
+#### **Inactive Event**
+```json
+{
+  "title": "Winter Conference",
+  "status": "inactive",
+  "date": "2024-02-10T09:00:00.000Z",
+  "venueName": "Convention Center",
+  "ticketTypes": {
+    "standard": { "price": 199, "capacity": 200 }
+  }
+}
+```
+
 #### **Deactivated Event**
 ```json
 {
-  "title": "Deactivated Concert",
+  "title": "Cancelled Concert",
   "status": "deactivated",
   "date": "2024-05-20T19:00:00.000Z",
   "venueName": "Stadium",
@@ -209,23 +224,16 @@ const activeEvents = await db
   .orderBy('createdAt', 'desc')
   .get();
 
-// Get all events (including deactivated)
+// Get all events (including inactive)
 const allEvents = await db
   .collection('events')
   .orderBy('createdAt', 'desc')
   .get();
 
-// Get only deactivated events
-const deactivatedEvents = await db
+// Get only inactive events
+const inactiveEvents = await db
   .collection('events')
-  .where('status', '==', 'deactivated')
-  .orderBy('createdAt', 'desc')
-  .get();
-
-// Get only cancelled events
-const cancelledEvents = await db
-  .collection('events')
-  .where('status', '==', 'cancelled')
+  .where('status', '==', 'inactive')
   .orderBy('createdAt', 'desc')
   .get();
 ```
@@ -233,7 +241,7 @@ const cancelledEvents = await db
 ## 🎯 **Current Implementation**
 
 Your events page now shows:
-✅ **All events** (active, deactivated, cancelled, completed, draft)  
+✅ **All events** (active, inactive, deactivated, cancelled, completed)  
 ✅ **Correct ticket sold count** per event  
 ✅ **Proper date display** using `date` field or fallback to `createdAt`  
 ✅ **Attendee names** in booking detail table  
